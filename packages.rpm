@@ -35,7 +35,7 @@ zram
 ibus-gtk4
 ibus-typing-booster
 
-# ── Container / shell / build tools ────────────────────────────────
+# ── Container / shell / build tools (user-requested) ───────────────
 fish
 make
 toolbox
