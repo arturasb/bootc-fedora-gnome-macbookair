@@ -4,6 +4,8 @@
 
 # ── Desktop essentials ──────────────────────────────────────────────
 flatpak
+gnome-software
+gnome-backgrounds
 nautilus
 xdg-utils
 
