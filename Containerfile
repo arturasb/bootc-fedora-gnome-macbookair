@@ -101,6 +101,10 @@ echo "▸ Regenerating initramfs"
 kver="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
 dracut -f "/usr/lib/modules/${kver}/initramfs.img" "${kver}"
 
+# ── Kernel Arguments: ACPI OSI hacks for MacBook hardware ──
+# Some firmwares unlock features only when they "see" Darwin or Windows.
+bootc kargs --append 'acpi_osi="!Darwin"' --append 'acpi_osi="!Windows 2012"'
+
 # ── RPMFusion for broadcom-wl runtime dependencies ──
 FEDORA_RELEASE="$(rpm -E '%fedora')"
 dnf5 -y install \
