@@ -8,7 +8,7 @@
 # Build Broadcom WiFi (akmod-wl) and FaceTimeHD camera (akmod-facetimehd)
 # in an isolated builder so build-only deps don't pollute the final image.
 # FROM quay.io/fedora/fedora-bootc:44 AS builder
-FROM quay.io/bootc-devel/fedora-bootc-43-minimal-plus  AS builder
+FROM quay.io/bootc-devel/fedora-bootc:44 AS builder
 
 RUN <<BUILDER
 set -euo pipefail
