@@ -1,8 +1,20 @@
 # ── Desktop essentials ──────────────────────────────────────────────
-flatpak
-gnome-software
-gnome-backgrounds
+gnome-shell
+gdm
+gnome-session-wayland-session
+gnome-settings-daemon
+gnome-control-center
+gnome-terminal
 nautilus
+mutter
+dconf
+gnome-software
+gnome-system-monitor
+eog
+evince
+file-roller
+gvfs
+flatpak
 xdg-utils
 
 # ── File thumbnailers ──────────────────────────────────────────────
@@ -15,6 +27,7 @@ gnome-epub-thumbnailer
 auditctl
 git
 libva-intel-driver
+ffmpeg
 libnma
 libva-utils
 lm_sensors
