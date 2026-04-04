@@ -70,9 +70,6 @@ COPY --from=builder /var/cache/akmods/facetimehd/kmod-facetimehd*.rpm /tmp/kmods
 # Copy FaceTimeHD firmware from builder
 COPY --from=builder /usr/lib/firmware/facetimehd/ /usr/lib/firmware/facetimehd/
 
-echo "▸ Installing Groups"
-dnf5 group install -y networkmanager-submodules multimedia
-
 # Copy project configuration files
 COPY packages.rpm post-install.sh post-install.service \
      hid-apple.conf dracut-facetimehd.conf \
@@ -172,6 +169,11 @@ RUN echo "▸ Installing GNOME" && \
     file-roller gvfs && \
     dnf5 clean all && \
     rm -rfv /var/cache/* /var/log/* /var/tmp/*
+
+# ── Install RPM groups ──
+RUN echo "▸ Installing Groups" && \
+    dnf5 group install -y networkmanager-submodules multimedia
+
 
 # ── Install RPM packages from list & configure services ──
 RUN <<PACKAGES
