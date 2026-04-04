@@ -161,7 +161,7 @@ SYSCONFIG
 
 # ── Install GNOME Shell (minimal, no weak deps) ──
 RUN echo "▸ Installing GNOME" && \
-    dnf5 install group install "GNOME Desktop Environment" -y && \
+    dnf5 -y group install "GNOME" --with-optional  && \
     dnf5 clean all && \
     rm -rfv /var/cache/* \
             /var/log/* \
