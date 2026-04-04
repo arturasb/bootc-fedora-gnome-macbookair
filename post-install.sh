@@ -22,7 +22,6 @@ flatpak install --user --noninteractive flathub \
     com.mattjakeman.ExtensionManager \
     dev.geopjr.Tuba \
     io.github.diegopvlk.Cine \
-    io.neovim.nvim \
     net.nokyan.Resources \
     org.gnome.Calculator \
     org.gnome.Characters \
@@ -38,7 +37,13 @@ flatpak install --user --noninteractive flathub \
     org.gnome.font-viewer \
     org.mozilla.firefox \
     org.telegram.desktop \
-    page.tesk.Refine
+    org.gnome.Extensions \
+    org.keepassxc.KeePassXC \
+    io.freetubeapp.FreeTube \
+    io.github.totoshko88.RustConn \
+    org.gnome.Calendar \
+    org.gnome.Contacts \
+    org.signal.Signal
 
 # Mark as completed so this service won't run again
 mkdir -p "$(dirname "$FLAG")"
