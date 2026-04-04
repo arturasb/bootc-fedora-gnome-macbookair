@@ -21,6 +21,7 @@ flatpak install --user --noninteractive flathub \
     com.github.tchx84.Flatseal \
     com.mattjakeman.ExtensionManager \
     dev.geopjr.Tuba \
+    org.gnome.Showtime \
     net.nokyan.Resources \
     org.gnome.Calculator \
     org.gnome.Characters \
