@@ -170,7 +170,8 @@ echo "▸ Installing RPM packages from packages.rpm"
 dnf5 -y install \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA_RELEASE}.noarch.rpm" \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_RELEASE}.noarch.rpm"
-grep -v '^\s*#' packages.rpm | grep -v '^\s*$' | xargs dnf5 install -y --refresh --allowerasing
+# grep -v '^\s*#' packages.rpm | grep -v '^\s*$' | xargs dnf5 install -y --refresh --allowerasing
+dnf5 install -y --refresh --allowerasing $(grep -vE '^\s*(#|$)' packages.rpm)
 
 # ── Install RPM groups ──
 echo "▸ Installing Groups"
