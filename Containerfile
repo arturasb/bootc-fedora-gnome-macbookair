@@ -166,11 +166,9 @@ RUN echo "▸ Installing GNOME" && \
     gnome-settings-daemon gnome-control-center \
     gnome-terminal nautilus mutter dconf \
     gnome-software gnome-system-monitor eog evince \
-    file-roller gvfs \
+    file-roller gvfs && \
     dnf5 clean all && \
-    rm -rfv /var/cache/* \
-            /var/log/* \
-            /var/tmp/*
+    rm -rfv /var/cache/* /var/log/* /var/tmp/*
 
 # ── Install RPM packages from list & configure services ──
 RUN <<PACKAGES
