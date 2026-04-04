@@ -159,17 +159,6 @@ rm -rfv /var/cache/* \
         /var/tmp/*
 SYSCONFIG
 
-# ── Install GNOME Shell (minimal, no weak deps) ──
-RUN echo "▸ Installing GNOME" && \
-    dnf5 -y install \
-    gnome-shell gdm gnome-session-wayland-session \
-    gnome-settings-daemon gnome-control-center \
-    gnome-terminal nautilus mutter dconf \
-    gnome-software gnome-system-monitor eog evince \
-    file-roller gvfs && \
-    dnf5 clean all && \
-    rm -rfv /var/cache/* /var/log/* /var/tmp/*
-
 # ── Install RPM packages from list & configure services ──
 RUN <<PACKAGES
 set -euo pipefail
@@ -181,14 +170,11 @@ echo "▸ Installing RPM packages from packages.rpm"
 dnf5 -y install \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA_RELEASE}.noarch.rpm" \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_RELEASE}.noarch.rpm"
-grep -v '^\s*#' packages.rpm | grep -v '^\s*$' | xargs dnf5 install -y --refresh
+grep -v '^\s*#' packages.rpm | grep -v '^\s*$' | xargs dnf5 install -y --refresh --allowerasing
 
 # ── Install RPM groups ──
 echo "▸ Installing Groups"
 dnf5 group install -y networkmanager-submodules multimedia
-
-# ── Swapping ffmpeg-free with ffmpeg ──
-dnf swap ffmpeg-free ffmpeg --allowerasing
 
 # ── Install macbook-lighter (ambient light sensor control) ──
 echo "▸ Installing macbook-lighter from source"
