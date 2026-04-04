@@ -123,9 +123,9 @@ rm -rvf /opt && mkdir -vp /var/opt && ln -vs /var/opt /opt
 mkdir -vp /var/usrlocal && mv -v /usr/local/* /var/usrlocal/ 2>/dev/null || true
 rm -rvf /usr/local && ln -vs /var/usrlocal /usr/local
 
-# ── Timezone: Santiago, Chile ──
-echo "▸ Setting timezone to America/Santiago"
-ln -sf /usr/share/zoneinfo/America/Santiago /etc/localtime
+# ── Timezone: Europe/Vilnius ──
+echo "▸ Setting timezone to Europe/Vilnius"
+ln -sf /usr/share/zoneinfo/Europe/Vilnius /etc/localtime
 
 # ── MacBook keyboard configuration ──
 echo "▸ Installing MacBook keyboard configuration (hid_apple)"
