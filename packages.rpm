@@ -15,14 +15,12 @@ ffmpegthumbnailer
 glycin-thumbnailer
 gnome-epub-thumbnailer
 
-# ── Btrfs management ───────────────────────────────────────────────
-btrfs-assistant
-compsize
-
 # ── System utilities ───────────────────────────────────────────────
 auditctl
 git
-libva-intel-media-driver
+#libva-intel-media-driver
+libva-intel-driver
+ffmpeg
 libnma
 libva-utils
 lm_sensors
@@ -43,4 +41,7 @@ ibus-typing-booster
 fish
 gcc
 make
-toolbox
+distrobox
+mc
+btop
+
