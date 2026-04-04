@@ -171,10 +171,13 @@ RUN echo "▸ Installing GNOME Shell (minimal)" && \
 RUN <<PACKAGES
 set -euo pipefail
 
+# New addition
+FEDORA_RELEASE="$(rpm -E '%fedora')"
+
 echo "▸ Installing RPM packages from packages.rpm"
 dnf5 -y install \
-    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
-    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
+    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA_RELEASE}.noarch.rpm" \
+    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_RELEASE}.noarch.rpm"
 grep -v '^\s*#' packages.rpm | grep -v '^\s*$' | xargs dnf5 install -y --refresh
 
 # ── Install macbook-lighter (ambient light sensor control) ──
@@ -189,15 +192,6 @@ install -Dm755 src/macbook-lighter-screen.sh /usr/bin/macbook-lighter-screen
 install -Dm755 src/macbook-lighter-kbd.sh /usr/bin/macbook-lighter-kbd
 cd /
 rm -rf /tmp/macbook-lighter
-
-# ── Install weather-oclock extension from source (CleoMenezesJr) ──
-echo "▸ Installing weather-oclock extension from source"
-git clone --depth 1 https://github.com/CleoMenezesJr/weather-oclock.git /tmp/weather-oclock
-cd /tmp/weather-oclock
-# Build and install system-wide (/usr/share/gnome-shell/extensions)
-make install DESTDIR=/
-cd /
-rm -rf /tmp/weather-oclock
 
 # ── Install mbpfan v2.4.0 from source (missing in Fedora 44 repos) ──
 echo "▸ Installing mbpfan v2.4.0 from source"
