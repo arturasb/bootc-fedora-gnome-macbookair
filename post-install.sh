@@ -43,7 +43,8 @@ flatpak install --user --noninteractive flathub \
     io.github.totoshko88.RustConn \
     org.gnome.Calendar \
     org.gnome.Contacts \
-    org.signal.Signal
+    org.signal.Signal \
+    org.freedesktop.Platform.VAAPI.Intel
 
 # Mark as completed so this service won't run again
 mkdir -p "$(dirname "$FLAG")"
