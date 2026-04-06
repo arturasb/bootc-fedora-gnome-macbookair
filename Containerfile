@@ -159,9 +159,9 @@ rm -rfv /var/cache/* \
         /var/tmp/*
 SYSCONFIG
 
-# ── Install GNOME Shell (minimal, no weak deps) ──
-RUN echo "▸ Installing GNOME Shell (minimal)" && \
-    dnf5 install @gnome-desktop -y && \
+# ── Install Budgie Desktop ──
+RUN echo "▸ Installing Budgie Desktop" && \
+    dnf5 install @budgie-desktop -y && \
     dnf5 clean all && \
     rm -rfv /var/cache/* \
             /var/log/* \
