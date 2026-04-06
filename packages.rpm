@@ -1,9 +1,6 @@
 # ── Desktop essentials ──────────────────────────────────────────────
 flatpak
 glibc-all-langpacks
-plymouth
-plymouth-theme-spinner
-plymouth-plugin-label
 # ── File thumbnailers ──────────────────────────────────────────────
 evince-thumbnailer
 ffmpegthumbnailer
