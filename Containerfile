@@ -151,21 +151,20 @@ dnf5 clean all
 rm -rfv /var/cache/* \
         /var/log/* \
         /var/tmp/*
-SYSCONFIG
-
 # ── Install Desktop Environment ──
-RUN echo "▸ Installing GNOME" && \
+echo "▸ Installing GNOME" && \
     dnf5 install @gnome-desktop -y && \
     dnf5 clean all && \
     rm -rfv /var/cache/* \
             /var/log/* \
             /var/tmp/*
 
-RUN systemctl enable gdm
+systemctl enable gdm
 
 echo "▸ Regenerating initramfs"
 dracut --pedantic --regenerate-all --force
 
+SYSCONFIG
 
 # ── Install RPM packages from list & configure services ──
 RUN <<PACKAGES
