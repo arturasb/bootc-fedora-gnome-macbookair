@@ -1,6 +1,6 @@
 # bootc-fedora-gnome-macbookair
 
-Immutable Fedora 44 image with GNOME Shell, tailored for MacBook Air hardware. Automated daily builds via GitHub Actions.
+Immutable Fedora 43 image with Budgie Desktop, tailored for MacBook Air hardware. Manual builds via GitHub Actions.
 
 > **Tested on:** MacBook Air A1466 (Mid 2012 – 2017)
 
@@ -8,12 +8,11 @@ Immutable Fedora 44 image with GNOME Shell, tailored for MacBook Air hardware. A
 
 | Component | Details |
 |-----------|---------|
-| **Base** | Fedora Linux 44 (`quay.io/fedora/fedora-bootc:44`) |
-| **Desktop** | GNOME Shell (minimal install, no weak deps) |
+| **Base** | Fedora Linux 43 (`quay.io/fedora/fedora-bootc:43`) |
+| **Desktop** | Budgie Desktop |
 | **WiFi** | Broadcom `akmod-wl` via RPMFusion Non-Free |
 | **Camera** | FaceTimeHD via [mulderje/facetimehd-kmod](https://copr.fedorainfracloud.org/coprs/mulderje/facetimehd-kmod/) COPR + [firmware](https://github.com/patjak/facetimehd-firmware) |
-| **Filesystem** | Btrfs with subvolumes (root, var, home) |
-| **Timezone** | America/Santiago (Chile) |
+| **Filesystem** | EXT4 for root |
 | **Fan Control** | [`mbpfan`](https://github.com/linux-on-mac/mbpfan) (built from source v2.4.0) |
 | **Video Accel** | `libva-intel-media-driver` (VA-API) |
 | **Flatpaks** | User-level (`--user`) via first-login bootstrap |
@@ -31,7 +30,7 @@ Immutable Fedora 44 image with GNOME Shell, tailored for MacBook Air hardware. A
 | `dracut-facetimehd.conf` | Includes FaceTimeHD firmware in initramfs |
 | `suspend-fix.service` | Fixes MacBook spurious wakeup from suspend |
 | `powertop.service` | Battery optimization via PowerTOP auto-tune |
-| `.github/workflows/build-image.yml` | Daily CI/CD build (06:45 UTC) |
+| `.github/workflows/build-image.yml` | Manual CI/CD build |
 
 ## MacBook-Specific Features
 
@@ -50,7 +49,7 @@ Flatpak applications are installed automatically as `--user` on the first graphi
 
 ## How to Update
 
-The image is rebuilt daily at 02:00 UTC time.
+In the first place, manually run build CI/CD.
 
 ```bash
 # Check for updates
@@ -71,7 +70,7 @@ sudo reboot
 ### Build the container image
 
 ```bash
-git clone https://github.com/CleoMenezesJr/bootc-fedora-gnome-macbookair.git
+git clone https://github.com/arturasb/bootc-fedora-gnome-macbookair.git
 cd bootc-fedora-gnome-macbookair
 mkdir -p output
 sudo podman build -t bootc-fedora-gnome-macbookair -f Containerfile
@@ -105,7 +104,7 @@ bootc status
 sudo bootc rollback
 
 # Switch to this image (if already on bootc)
-sudo bootc switch ghcr.io/CleoMenezesJr/bootc-fedora-gnome-macbookair:latest
+sudo bootc switch ghcr.io/arturasb/bootc-fedora-gnome-macbookair:latest
 ```
 
 ## Rebasing from Fedora Atomic (Silverblue/Kinoite)
@@ -120,10 +119,10 @@ systemctl reboot
 
 Then, execute the rebase command directly from the container registry:
 ```bash
-sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/cleomenezesjr/bootc-fedora-gnome-macbookair:latest
+sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/arturasb/bootc-fedora-gnome-macbookair:latest
 systemctl reboot
 ```
 
 ## Credits
 
-This project was inspired by and based on the work from [Ferlinuxdebian/bootc-gnome-minimal](https://github.com/Ferlinuxdebian/bootc-gnome-minimal). Special thanks to the original author for the foundational bootc configuration and workflow.
+This project was inspired by and based on the work from [[CleoMenezesJr/bootc-fedora-gnome-macbookair:main](https://github.com/CleoMenezesJr/bootc-fedora-gnome-macbookair)). Special thanks to the original author for the foundational bootc configuration and workflow.
