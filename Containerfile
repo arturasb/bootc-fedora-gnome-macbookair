@@ -1,228 +1,112 @@
 # =============================================================================
-# bootc-fedora-gnome-macbookair
-# Immutable Fedora 44 + GNOME Shell image tailored for MacBook Air hardware.
-# Includes Broadcom WiFi, FaceTimeHD camera, and MacBook-specific optimizations.
+# bootc-fedora-onyx-macbookair
+# Immutable Fedora Onyx 43 (Budgie) tailored for MacBook Air hardware.
 # =============================================================================
 
 # ── Stage 1: Build out-of-tree kernel modules ──────────────────────────────
-# Build Broadcom WiFi (akmod-wl) and FaceTimeHD camera (akmod-facetimehd)
-# in an isolated builder so build-only deps don't pollute the final image.
-FROM quay.io/fedora/fedora-bootc:43 AS builder
+FROM quay.io/fedora-ostree-desktops/onyx:43 AS builder
 
 RUN <<BUILDER
 set -euo pipefail
-
-echo "▸ Upgrading kernel packages"
+# Install build tools and kernel headers
 dnf5 upgrade -y 'kernel*' --refresh
-
-echo "▸ Installing kernel-devel and build tools"
-dnf5 -y install kernel-devel akmods wget git make gcc --refresh
+dnf5 -y install kernel-devel akmods wget git make gcc curl xz cpio --refresh
 
 KERNEL_VERSION="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
 FEDORA_RELEASE="$(rpm -E '%fedora')"
-echo "▸ Detected kernel: ${KERNEL_VERSION}  (Fedora ${FEDORA_RELEASE})"
 
-# ── Broadcom WiFi (from RPMFusion Non-Free) ──
-echo "▸ Enabling RPMFusion Non-Free repository"
-dnf5 -y install \
-    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_RELEASE}.noarch.rpm"
-
-echo "▸ Installing and building akmod-wl (Broadcom WiFi)"
+# 1. Broadcom WiFi (RPMFusion Non-Free)
+dnf5 -y install "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_RELEASE}.noarch.rpm"
 dnf5 -y install akmod-wl
 akmods --force --kernels "${KERNEL_VERSION}" --kmod wl
 
-# ── FaceTimeHD camera (from COPR mulderje/facetimehd-kmod) ──
-echo "▸ Enabling COPR for FaceTimeHD kernel module"
-# For Fedora >= 41 the COPR uses "rawhide" as the release identifier
-if [ "${FEDORA_RELEASE}" -ge 41 ]; then
-    COPR_RELEASE="rawhide"
-else
-    COPR_RELEASE="${FEDORA_RELEASE}"
-fi
+# 2. FaceTimeHD Camera Module (COPR)
+# Note: Using rawhide if F43 specific repo isn't yet populated
 curl -LsSf -o /etc/yum.repos.d/_copr_mulderje-facetimehd-kmod.repo \
-    "https://copr.fedorainfracloud.org/coprs/mulderje/facetimehd-kmod/repo/fedora-${COPR_RELEASE}/mulderje-facetimehd-kmod-fedora-${COPR_RELEASE}.repo"
-
-echo "▸ Installing and building akmod-facetimehd"
-ARCH="$(rpm -E '%_arch')"
-dnf5 -y install "akmod-facetimehd-*.fc${FEDORA_RELEASE}.${ARCH}" || \
-    dnf5 -y install akmod-facetimehd
+    "https://fedorainfracloud.org"
+dnf5 -y install akmod-facetimehd
 akmods --force --kernels "${KERNEL_VERSION}" --kmod facetimehd
 
-# ── Build FaceTimeHD firmware ──
-echo "▸ Building FaceTimeHD firmware from source"
+# 3. FaceTimeHD Firmware Extraction
+# Corrected URL: https://github.com/patjak/facetimehd-firmware.git
 git clone --depth 1 https://github.com/patjak/facetimehd-firmware.git /tmp/facetimehd-firmware
 cd /tmp/facetimehd-firmware
-make
-make install
-cd /
-rm -rf /tmp/facetimehd-firmware
-
-echo "▸ Builder stage complete"
+make && make install
 BUILDER
 
 # ── Stage 2: Final bootable image ──────────────────────────────────────────
-FROM quay.io/fedora/fedora-bootc:43
+FROM quay.io/fedora-ostree-desktops/onyx:43
 
-# Copy pre-built kernel module RPMs from builder
+# Copy pre-built kernel modules and firmware from builder
 COPY --from=builder /var/cache/akmods/wl/kmod-wl*.rpm /tmp/kmods/
 COPY --from=builder /var/cache/akmods/facetimehd/kmod-facetimehd*.rpm /tmp/kmods/
-
-# Copy FaceTimeHD firmware from builder
 COPY --from=builder /usr/lib/firmware/facetimehd/ /usr/lib/firmware/facetimehd/
 
-# Copy project configuration files
+# Copy your local project configuration files
 COPY packages.rpm post-install.sh post-install.service \
      hid-apple.conf dracut-facetimehd.conf \
      suspend-fix.service powertop.service ./
 
-# ── System configuration & kernel module installation ──
 RUN <<SYSCONFIG
 set -euo pipefail
-
-echo "▸ Creating required directories"
-mkdir -vp /var/roothome /data /var/home
-
-echo "▸ Installing kernel-modules-extra for broader hardware support"
-dnf5 -y install kernel-modules-extra --refresh
-
-# ── Dracut: strip unnecessary modules, add FaceTimeHD firmware ──
-echo "▸ Configuring dracut: removing NFS, adding FaceTimeHD firmware"
-tee /etc/dracut.conf.d/no-nfs.conf >/dev/null <<'NONFS'
-omit_dracutmodules+=" nfs "
-omit_drivers+=" nfs nfsv3 nfsv4 nfs_acl nfs_common sunrpc rxrpc rpcrdma auth_rpcgss rpcsec_gss_krb5 "
-NONFS
-
-mv -v dracut-facetimehd.conf /etc/dracut.conf.d/facetimehd.conf
-
-echo "▸ Regenerating initramfs"
-kver="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
-dracut -f "/usr/lib/modules/${kver}/initramfs.img" "${kver}"
-
-# ── Kernel Arguments: ACPI OSI hacks for MacBook hardware ──
-# Declaring kernel arguments via bootc-native configuration files.
-mkdir -p /usr/lib/bootc/kargs.d/
-echo 'kargs = ["acpi_osi=\"!Darwin\"", "acpi_osi=\"!Windows 2012\""]' > /usr/lib/bootc/kargs.d/10-macbook.toml
-
-# ── RPMFusion for broadcom-wl runtime dependencies ──
-FEDORA_RELEASE="$(rpm -E '%fedora')"
-dnf5 -y install \
-    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_RELEASE}.noarch.rpm"
-
-# ── Install pre-built kernel modules ──
-echo "▸ Installing Broadcom WiFi kernel module (kmod-wl)"
-dnf5 -y install /tmp/kmods/kmod-wl-*.rpm
-
-echo "▸ Installing FaceTimeHD camera kernel module (kmod-facetimehd)"
-dnf5 -y install /tmp/kmods/kmod-facetimehd-*.rpm || \
-    rpm -ivh --nodeps /tmp/kmods/kmod-facetimehd-*.rpm
-
-# ── Writable directories (bootc best practice) ──
-# See: https://bootc-dev.github.io/bootc/building/guidance.html
-echo "▸ Setting up writable /opt and /usr/local"
-rm -rvf /opt && mkdir -vp /var/opt && ln -vs /var/opt /opt
-mkdir -vp /var/usrlocal && mv -v /usr/local/* /var/usrlocal/ 2>/dev/null || true
-rm -rvf /usr/local && ln -vs /var/usrlocal /usr/local
-
-# ── Timezone: Europe/Vilnius ──
-echo "▸ Setting timezone to Europe/Vilnius"
-ln -sf /usr/share/zoneinfo/Europe/Vilnius /etc/localtime
-
-# ── MacBook keyboard configuration ──
-echo "▸ Installing MacBook keyboard configuration (hid_apple)"
-mv -v hid-apple.conf /etc/modprobe.d/hid-apple.conf
-
-# ── Systemd user service: user-level Flatpak bootstrap ──
-echo "▸ Installing post-install script and user service"
-mv -v post-install.sh /usr/bin/post-install.sh
-chmod +x /usr/bin/post-install.sh
-
-# Flatpaks are requested as --user, so this logic MUST trigger inside a user session.
-# Modifying this to system/ would run it as root during boot and break Flatpaks.
-mv -v post-install.service /usr/lib/systemd/user/post-install.service
-
-# Enable globally for all users executing a graphical session
-systemctl --global enable post-install.service
-
-# ── MacBook-specific systemd services ──
-echo "▸ Installing MacBook hardware services"
-mv -v suspend-fix.service /usr/lib/systemd/system/suspend-fix.service
-mv -v powertop.service /usr/lib/systemd/system/powertop.service
-systemctl enable suspend-fix.service
-systemctl enable powertop.service
-
-# ── Cleanup builder artifacts ──
-echo "▸ Cleaning up build artifacts"
-rm -rvf /tmp/kmods
-dnf5 clean all
-rm -rfv /var/cache/* \
-        /var/log/* \
-        /var/tmp/*
-SYSCONFIG
-
-# ── Install Budgie Desktop ──
-RUN echo "▸ Installing Budgie Desktop" && \
-    dnf5 install @budgie-desktop -y && \
-    dnf5 clean all && \
-    rm -rfv /var/cache/* \
-            /var/log/* \
-            /var/tmp/*
-
-# ── Install RPM packages from list & configure services ──
-RUN <<PACKAGES
-set -euo pipefail
-
-# New addition
 FEDORA_RELEASE="$(rpm -E '%fedora')"
 
-echo "▸ Installing RPM packages from packages.rpm"
+# 1. Enable Official Repositories
 dnf5 -y install \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA_RELEASE}.noarch.rpm" \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_RELEASE}.noarch.rpm"
-# grep -v '^\s*#' packages.rpm | grep -v '^\s*$' | xargs dnf5 install -y --refresh --allowerasing
-dnf5 install -y --refresh --allowerasing $(grep -vE '^\s*(#|$)' packages.rpm)
 
-# ── Install RPM groups ──
-echo "▸ Installing Groups"
-dnf5 group install -y networkmanager-submodules multimedia
+# 2. Install Hardware Drivers & Modules
+dnf5 -y install kernel-modules-extra /tmp/kmods/*.rpm --refresh
+ln -sf /usr/share/zoneinfo/Europe/Vilnius /etc/localtime
+mv hid-apple.conf /etc/modprobe.d/
 
-# ── Install macbook-lighter (ambient light sensor control) ──
-echo "▸ Installing macbook-lighter from source"
-dnf5 -y install git
-git clone --depth 1 https://github.com/harttle/macbook-lighter.git /tmp/macbook-lighter
-cd /tmp/macbook-lighter
-install -Dm644 macbook-lighter.conf /etc/macbook-lighter.conf
-install -Dm644 macbook-lighter.service /usr/lib/systemd/system/macbook-lighter.service
-install -Dm755 src/macbook-lighter-ambient.sh /usr/bin/macbook-lighter-ambient
-install -Dm755 src/macbook-lighter-screen.sh /usr/bin/macbook-lighter-screen
-install -Dm755 src/macbook-lighter-kbd.sh /usr/bin/macbook-lighter-kbd
-cd /
-rm -rf /tmp/macbook-lighter
+# 3. Setup Dracut & Regenerate Initramfs
+# This ensures drivers load during the early boot process
+mv dracut-facetimehd.conf /etc/dracut.conf.d/facetimehd.conf
+KVER=$(ls /usr/lib/modules | head -n 1)
+echo "▸ Regenerating initramfs for kernel: ${KVER}"
+dracut -vf "/usr/lib/modules/${KVER}/initramfs.img" "${KVER}"
 
-# ── Install mbpfan v2.4.0 from source (missing in Fedora 44 repos) ──
-echo "▸ Installing mbpfan v2.4.0 from source"
-git clone --depth 1 --branch v2.4.0 https://github.com/linux-on-mac/mbpfan.git /tmp/mbpfan
-cd /tmp/mbpfan
-make
-make install
-# Ensure service file is in the correct systemd directory
-cp -v mbpfan.service /usr/lib/systemd/system/mbpfan.service
-cd /
-rm -rf /tmp/mbpfan
+# 4. Bootc Native Kernel Arguments (for MacBook hardware quirks)
+mkdir -p /usr/lib/bootc/kargs.d/
+# ── Kernel Arguments: ACPI OSI hacks for MacBook hardware ──
+# Declaring kernel arguments via bootc-native configuration files.
+mkdir -p /usr/lib/bootc/kargs.d/
+cat > /usr/lib/bootc/kargs.d/10-macbook.toml <<'KARGS'
+kargs = ["acpi_osi=!Darwin", "acpi_osi=!Windows 2012"]
+match-architectures = ["x86_64"]
+KARGS
 
-echo "▸ Configuring systemd services"
-systemctl mask systemd-remount-fs.service
-systemctl enable zram-swap.service
-systemctl enable macbook-lighter.service
-systemctl enable mbpfan.service
+# ── Kernel Arguments: Intel GPU + PCIe power savings (MacBookAir7,2 / Broadwell) ──
+# PSR: Panel Self Refresh — cuts eDP link power when framebuffer is static
+# FBC: Frame Buffer Compression — compresses framebuffer in VRAM
+# pcie_aspm=force: enables PCIe ASPM link power states
+cat > /usr/lib/bootc/kargs.d/20-macbook-power.toml <<'KARGS'
+kargs = ["i915.enable_psr=1", "i915.enable_fbc=1", "pcie_aspm=force", "mem_sleep_default=s2idle"]
+match-architectures = ["x86_64"]
+KARGS
 
-echo "▸ Final cleanup"
-rm -rvf packages.rpm
+# ── Audio power save (Intel HDA codec off when idle for 1s) ──
+echo 'options snd_hda_intel power_save=1' > /usr/lib/modprobe.d/audio-power-save.conf
+
+# 5. Services & Post-install
+mv post-install.sh /usr/bin/ && chmod +x /usr/bin/post-install.sh
+mv post-install.service /usr/lib/systemd/user/
+mv suspend-fix.service powertop.service /usr/lib/systemd/system/
+systemctl --global enable post-install.service
+systemctl enable suspend-fix.service powertop.service
+
+SYSCONFIG
+
+RUN <<PACKAGES
+# 6. Install User Packages from packages.rpm
+dnf5 install -y --allowerasing $(grep -vE '^\s*(#|$)' packages.rpm)
+
+# Cleanup build artifacts
+rm -rf /tmp/kmods /var/cache/* /var/log/*
 dnf5 clean all
-rm -rfv /var/cache/* \
-        /var/log/* \
-        /var/tmp/* \
-        /var/usrlocal/share/applications/mimeinfo.cache \
-        /var/roothome/.*
+
 PACKAGES
 
 # ── Lint the final image ──
