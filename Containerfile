@@ -4,16 +4,16 @@ FROM quay.io/fedora/fedora-bootc:42
 RUN set -euo pipefail
 
 # 2. Setup Repositories
-# Using 'dnf copr enable' by name is much safer than hardcoded URLs
-RUN dnf -y install \
+# Using 'dnf5 copr enable' by name is much safer than hardcoded URLs
+RUN dnf5 -y install \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-43.noarch.rpm" \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-43.noarch.rpm" && \
-    dnf -y copr enable   "https://copr.fedorainfracloud.org/coprs/mulderje/facetimehd-kmod/repo/fedora-rawhide/mulderje-facetimehd-kmod-fedora-rawhide.repo"
+    dnf5 -y copr enable   "https://copr.fedorainfracloud.org/coprs/mulderje/facetimehd-kmod/repo/fedora-rawhide/mulderje-facetimehd-kmod-fedora-rawhide.repo"
 
 # 3. Install Budgie Desktop (Onyx) and Essential Tools
 # Includes WireGuard, Toolbox, and Silverblue-standard packages
-RUN dnf -y groupinstall "Budgie Desktop" && \
-    dnf -y install \
+RUN dnf5 -y groupinstall "Budgie Desktop" && \
+    dnf5 -y install \
     fedora-release-onyx \
     budgie-desktop-view budgie-control-center network-manager-applet \
     lightdm slick-greeter \
@@ -21,19 +21,19 @@ RUN dnf -y groupinstall "Budgie Desktop" && \
     wireguard-tools systemd-resolved nm-connection-editor \
     libavcodec-freeworld \
     glibc-all-langpacks intel-media-driver ffmpeg mc btop libva-utils zram zip unzip usbutils lm_sensors && \
-    dnf clean all
+    dnf5 clean all
 
 # 4. MacBook Hardware: Drivers & Thermal Management
 # broadcom-wl for WiFi, facetimehd for camera, mbpfan for cooling
-RUN dnf -y install \
+RUN dnf5 -y install \
     broadcom-wl akmod-wl \
     akmod-facetimehd facetimehd-kmod-common \
     dkms kernel-devel akmods wget git make gcc curl xz cpio \
     mbpfan NetworkManager-wifi && \
-    dnf clean all
+    dnf5 clean all
 
 # 4.1. Build Akmods for the specific kernel in the image
-RUN KERNEL_VERSION=$(cd /usr/lib/modules && echo *) && \
+RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
     echo "▸ Building modules for kernel: ${KERNEL_VERSION}" && \
     akmods --force --kernels "${KERNEL_VERSION}" --kmod facetimehd && \
     akmods --force --kernels "${KERNEL_VERSION}" --kmod wl
@@ -61,9 +61,8 @@ RUN echo "facetimehd" > /etc/modules-load.d/facetimehd.conf && \
 
 # 7. Regenerate Initramfs (CRITICAL)
 # This packs your new MacBook drivers into the boot image
-RUN set -x; \
-    kver=$(cd /usr/lib/modules && echo *); \
-    dracut -vf /usr/lib/modules/$kver/initramfs.img $kver
+RUN kver="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
+    dracut -vf "/usr/lib/modules/${kver}/initramfs.img" "${kver}"
 
 # 8. Lint the final image
 RUN bootc container lint
