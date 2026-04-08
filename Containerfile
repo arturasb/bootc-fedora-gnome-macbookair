@@ -4,7 +4,7 @@
 # =============================================================================
 
 # ── Stage 1: Build out-of-tree kernel modules ──────────────────────────────
-FROM quay.io/fedora-ostree-desktops/onyx:43 AS builder
+FROM quay.io/fedora/fedora-onyx:43
 
 RUN <<BUILDER
 set -euo pipefail
@@ -50,7 +50,7 @@ make && make install
 BUILDER
 
 # ── Stage 2: Final bootable image ──────────────────────────────────────────
-FROM quay.io/fedora-ostree-desktops/onyx:43
+FROM quay.io/fedora/fedora-onyx:43
 
 # Copy pre-built kernel modules and firmware from builder
 COPY --from=builder /var/cache/akmods/wl/kmod-wl*.rpm /tmp/kmods/
