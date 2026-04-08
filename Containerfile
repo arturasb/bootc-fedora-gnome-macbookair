@@ -1,10 +1,9 @@
-# 1. Base: Use official Fedora 42 (Rawhide/Development) bootc
-FROM quay.io/fedora/fedora-bootc:42
+# 1. Base: Use official Fedora 43 (Rawhide/Development) bootc
+FROM quay.io/fedora/fedora-bootc:43
 
 RUN set -euo pipefail
 
 # 2. Setup Repositories
-# Using 'dnf5 copr enable' by name is much safer than hardcoded URLs
 RUN dnf5 -y install \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-43.noarch.rpm" \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-43.noarch.rpm" && \
