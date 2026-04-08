@@ -13,9 +13,9 @@ RUN dnf5 -y install \
 
 # 3. Install Budgie Desktop (Onyx) and Essential Tools
 # Includes WireGuard, Toolbox, and Silverblue-standard packages
-RUN dnf5 -y install budgie-desktop \
-    fedora-release-onyx \
-    budgie-desktop-view budgie-control-center network-manager-applet \
+RUN dnf5 -y group install budgie-desktop-environment && \
+    dnf5 -y install \
+    network-manager-applet \
     lightdm slick-greeter \
     flatpak distrobox \
     wireguard-tools systemd-resolved nm-connection-editor \
