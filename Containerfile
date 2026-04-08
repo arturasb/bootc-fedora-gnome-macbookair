@@ -6,8 +6,8 @@ RUN set -euo pipefail
 # 2. Setup Repositories
 # Using 'dnf copr enable' by name is much safer than hardcoded URLs
 RUN dnf -y install \
-    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA_RELEASE}.noarch.rpm" \
-    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_RELEASE}.noarch.rpm" && \
+    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-43.noarch.rpm" \
+    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-43.noarch.rpm" && \
     dnf -y copr enable   "https://copr.fedorainfracloud.org/coprs/mulderje/facetimehd-kmod/repo/fedora-rawhide/mulderje-facetimehd-kmod-fedora-rawhide.repo"
 
 # 3. Install Budgie Desktop (Onyx) and Essential Tools
