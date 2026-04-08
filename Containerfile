@@ -15,13 +15,13 @@ else
     COPR_RELEASE="${FEDORA_RELEASE}"
 fi
 
-INIT
-
 # 2. Enable RPM Fusion and FaceTimeHD COPR
 RUN dnf -y install \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA_RELEASE}.noarch.rpm" \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_RELEASE}.noarch.rpm" && \
     dnf -y copr enable "https://copr.fedorainfracloud.org/coprs/mulderje/facetimehd-kmod/repo/fedora-${COPR_RELEASE}/mulderje-facetimehd-kmod-fedora-${COPR_RELEASE}.repo"
+
+INIT
 
 # 3. Install Budgie Desktop (Onyx) and Essential Tools
 # Includes WireGuard, Toolbox, and Silverblue-standard packages
@@ -45,9 +45,14 @@ RUN dnf -y install \
     mbpfan NetworkManager-wifi && \
     dnf clean all
 
-# 4.1.
-RUN akmods --force --kernels "${KERNEL_VERSION}" --kmod facetimehd && \
-    akmods --force --kernels "${KERNEL_VERSION}" --kmod wl
+# 4.1. Akmods
+RUN << AKMODS
+
+KERNEL_VERSION="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')"
+akmods --force --kernels "${KERNEL_VERSION}" --kmod facetimehd && \
+akmods --force --kernels "${KERNEL_VERSION}" --kmod wl
+
+AKMODS
 
 # 5. Extract FaceTimeHD Firmware from Apple BootCamp Driver
 RUN git clone --depth 1 https://github.com/patjak/facetimehd-firmware.git /tmp/facetimehd-firmware && \
