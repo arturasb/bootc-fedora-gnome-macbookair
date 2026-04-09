@@ -61,6 +61,13 @@ RUN echo "facetimehd" > /etc/modules-load.d/facetimehd.conf && \
     systemctl --global enable pipewire.service wireplumber.service && \
     systemctl enable zram-swap.service
 
+# 6.1. Creating required directories
+RUN echo "▸ Creating required directories" && \
+    mkdir -vp /var/roothome /data /var/home
+# 6.2. Installing kernel-modules-extra for broader hardware support
+RUN echo "▸ Installing kernel-modules-extra for broader hardware support" && \
+    dnf5 -y install kernel-modules-extra --refresh
+
 # 7. Regenerate Initramfs (CRITICAL)
 # This packs your new MacBook drivers into the boot image
 RUN kver="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
