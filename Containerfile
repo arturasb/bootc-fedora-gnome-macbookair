@@ -48,10 +48,10 @@ RUN git clone --depth 1 "https://github.com/patjak/facetimehd-firmware.git" /tmp
 
 # 5.1. Writable directories (bootc best practice)
 # See: https://bootc-dev.github.io/bootc/building/guidance.html
-echo "▸ Setting up writable /opt and /usr/local"
-rm -rvf /opt && mkdir -vp /var/opt && ln -vs /var/opt /opt
-mkdir -vp /var/usrlocal && mv -v /usr/local/* /var/usrlocal/ 2>/dev/null || true
-rm -rvf /usr/local && ln -vs /var/usrlocal /usr/local
+RUN echo "▸ Setting up writable /opt and /usr/local" && \
+    rm -rvf /opt && mkdir -vp /var/opt && ln -vs /var/opt /opt && \
+    mkdir -vp /var/usrlocal && mv -v /usr/local/* /var/usrlocal/ 2>/dev/null || true && \
+    rm -rvf /usr/local && ln -vs /var/usrlocal /usr/local
 
 
 # 5.2 Bootc Native Kernel Arguments & Modprobe
