@@ -48,7 +48,7 @@ RUN git clone --depth 1 "https://github.com/patjak/facetimehd-firmware.git" /tmp
 
 # 5.1 Bootc Native Kernel Arguments & Modprobe
 RUN mkdir -p /usr/lib/bootc/kargs.d/ && \
-    echo 'kargs = ["acpi_osi=!Darwin", "acpi_osi=!Windows 2012", "i915.enable_psr=1", "i915.enable_fbc=1", "pcie_aspm=force", "mem_sleep_default=s2idle"]' > /usr/lib/bootc/kargs.d/10-macbook.toml && \
+    echo 'kargs = ["acpi_osi=!Darwin", "acpi_osi=!Windows 2012"]' > /usr/lib/bootc/kargs.d/10-macbook.toml && \
     mkdir -p /usr/lib/modprobe.d/ && \
     echo 'options snd_hda_intel power_save=1' > /usr/lib/modprobe.d/audio-power-save.conf
 
