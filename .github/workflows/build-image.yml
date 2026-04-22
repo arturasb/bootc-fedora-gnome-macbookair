@@ -1,9 +1,8 @@
 name: Build and Push Bootc Image
 
 on:
-  #schedule:
-    # Daily at 02:00 UTC (22:00 Chile time)
-  #  - cron: '0 2 * * *'
+  schedule:
+    - cron: '0 2 * * 3,0'
   #push:
   #  branches:
   #    - main
