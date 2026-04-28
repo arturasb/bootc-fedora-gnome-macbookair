@@ -5,8 +5,8 @@ RUN set -euo pipefail
 
 # 2. Setup Repositories
 RUN dnf5 -y install \
-    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-43.noarch.rpm" \
-    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-43.noarch.rpm" && \
+    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-44.noarch.rpm" \
+    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm" && \
     # Direct download of COPR repo file to avoid dnf5 plugin issues
     curl -L -o /etc/yum.repos.d/_copr_mulderje-facetimehd-kmod.repo \
     https://copr.fedorainfracloud.org/coprs/mulderje/facetimehd-kmod/repo/fedora-rawhide/mulderje-facetimehd-kmod-fedora-rawhide.repo
