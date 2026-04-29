@@ -7,8 +7,8 @@ RUN set -euo pipefail
 RUN dnf5 -y --refresh install \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-44.noarch.rpm" \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm" && \
-    dnf5 config-manager setopt rpmfusion-free-rawhide.enabled=0 && \
-    dnf5 config-manager setopt rpmfusion-nonfree-rawhide.enabled=0 && \
+    sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/rpmfusion-free-rawhide.repo && \
+    sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/rpmfusion-nonfree-rawhide.repo && \
     # Direct download of COPR repo file to avoid dnf5 plugin issues
     curl -L -o /etc/yum.repos.d/_copr_mulderje-facetimehd-kmod.repo \
     https://copr.fedorainfracloud.org/coprs/mulderje/facetimehd-kmod/repo/fedora-44/mulderje-facetimehd-kmod-fedora-44.repo
