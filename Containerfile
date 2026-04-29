@@ -15,8 +15,7 @@ RUN dnf5 -y --refresh install \
 # Includes WireGuard, Toolbox, and Silverblue-standard packages
 RUN dnf5 -y group install budgie-desktop-environment && \
     dnf5 -y --refresh install \
-    network-manager-applet \
-    lightdm slick-greeter \
+    slick-greeter \
     flatpak distrobox \
     wireguard-tools systemd-resolved nm-connection-editor \
     libavcodec-freeworld \
@@ -28,7 +27,7 @@ RUN dnf5 -y group install budgie-desktop-environment && \
 RUN dnf5 -y --refresh install \
     broadcom-wl akmod-wl \
     akmod-facetimehd facetimehd-kmod-common \
-    dkms kernel-devel akmods wget git make gcc curl xz cpio \
+    kernel-devel akmods wget git make gcc curl xz cpio \
     NetworkManager-wifi && \
     dnf5 clean all
 
@@ -94,10 +93,6 @@ RUN systemctl mask systemd-remount-fs.service
 RUN echo "▸ Creating required directories" && \
     mkdir -vp /var/roothome /data /var/home
 
-# 6.3. Installing kernel-modules-extra for broader hardware support
-RUN echo "▸ Installing kernel-modules-extra for broader hardware support" && \
-    dnf5 -y  --refresh install kernel-modules-extra --refresh
-
 # 7. Regenerate Initramfs (CRITICAL)
 # This packs your new MacBook drivers into the boot image
 RUN kver="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" && \
@@ -116,10 +111,7 @@ rm -rfv /var/cache/* \
         /var/usrlocal/share/applications/mimeinfo.cache \
         /var/roothome/.*
 
-# 8.1. Final check for /usr/etc
-rm -rvf /usr/etc
-
-# 8.2. Declare /var dirs for bootc lint compliance ──
+# 8.1. Declare /var dirs for bootc lint compliance ──
 echo "▸ Generating tmpfiles.d entries for /var dirs"
 find /var -mindepth 1 -maxdepth 4 -type d \
   | grep -v '^/var/home' \
