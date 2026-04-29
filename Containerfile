@@ -14,7 +14,7 @@ RUN dnf5 -y install \
 # 3. Install Budgie Desktop (Onyx) and Essential Tools
 # Includes WireGuard, Toolbox, and Silverblue-standard packages
 RUN dnf5 -y group install budgie-desktop-environment && \
-    dnf5 -y --refresh install \
+    dnf5 -y install \
     network-manager-applet \
     lightdm slick-greeter \
     flatpak distrobox \
@@ -25,11 +25,11 @@ RUN dnf5 -y group install budgie-desktop-environment && \
 
 # 4. MacBook Hardware: Drivers & Thermal Management
 # broadcom-wl for WiFi, facetimehd for camera, mbpfan for cooling
-RUN dnf5 -y --refresh install \
+RUN dnf5 -y install \
     broadcom-wl akmod-wl \
     akmod-facetimehd facetimehd-kmod-common \
     dkms kernel-devel akmods wget git make gcc curl xz cpio \
-    mbpfan NetworkManager-wifi && \
+    NetworkManager-wifi && \
     dnf5 clean all
 
 # 4.1. Build Akmods for the specific kernel in the image
@@ -46,7 +46,18 @@ RUN git clone --depth 1 "https://github.com/patjak/facetimehd-firmware.git" /tmp
     cd / && \
     rm -rf /tmp/facetimehd-firmware
 
-# 5.1. Writable directories (bootc best practice)
+# 5.1. Install mbpfan v2.4.0 from source (missing in Fedora 44 repos) ──
+RUN echo "▸ Installing mbpfan v2.4.0 from source" && \
+    git clone --depth 1 --branch v2.4.0 https://github.com/linux-on-mac/mbpfan.git /tmp/mbpfan  && \
+    cd /tmp/mbpfan && \
+    make && \
+    make install && \
+    # Ensure service file is in the correct systemd directory
+    cp -v mbpfan.service /usr/lib/systemd/system/mbpfan.service && \
+    cd /  && \
+    rm -rf /tmp/mbpfan
+
+# 5.2. Writable directories (bootc best practice)
 # See: https://bootc-dev.github.io/bootc/building/guidance.html
 RUN echo "▸ Setting up writable /opt and /usr/local" && \
     rm -rvf /opt && mkdir -vp /var/opt && ln -vs /var/opt /opt && \
@@ -54,16 +65,16 @@ RUN echo "▸ Setting up writable /opt and /usr/local" && \
     rm -rvf /usr/local && ln -vs /var/usrlocal /usr/local
 
 
-# 5.2 Bootc Native Kernel Arguments & Modprobe
+# 5.3 Bootc Native Kernel Arguments & Modprobe
 RUN mkdir -p /usr/lib/bootc/kargs.d/ && \
     echo 'kargs = ["acpi_osi=!Darwin", "acpi_osi=!Windows 2012"]' > /usr/lib/bootc/kargs.d/10-macbook.toml && \
     mkdir -p /usr/lib/modprobe.d/ && \
     echo 'options snd_hda_intel power_save=1' > /usr/lib/modprobe.d/audio-power-save.conf
 
-# 5.3. Disable XHC1/LID0 ACPI wakeup sources (prevents spurious wakeups)
+# 5.4. Disable XHC1/LID0 ACPI wakeup sources (prevents spurious wakeups)
 COPY suspend-fix.service /usr/lib/systemd/system/suspend-fix.service
 
-# 5.4. Powertop optimizations to save battery
+# 5.5. Powertop optimizations to save battery
 COPY powertop.service /usr/lib/systemd/system/powertop.service
 
 # 6. System Configuration & Services
