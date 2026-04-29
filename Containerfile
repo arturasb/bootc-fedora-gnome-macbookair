@@ -1,11 +1,7 @@
 # 1. Base: Use official Fedora 44 bootc
-FROM quay.io/fedora-ostree-desktops/budgie-atomic:44
+FROM quay.io/fedora/fedora-bootc:44
 
 RUN set -euo pipefail
-
-# 1.1 Adding akmodsbuild to build akmod modules
-RUN groupadd akmodsbuild && \
-    useradd -g akmodsbuild -d /var/cache/akmods -s /sbin/nologin akmodsbuild
 
 # 2. Setup Repositories
 RUN dnf5 -y --refresh install \
@@ -13,35 +9,32 @@ RUN dnf5 -y --refresh install \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm" && \
     # Direct download of COPR repo file to avoid dnf5 plugin issues
     curl -L -o /etc/yum.repos.d/_copr_mulderje-facetimehd-kmod.repo \
-    https://copr.fedorainfracloud.org/coprs/mulderje/facetimehd-kmod/repo/fedora-44/mulderje-facetimehd-kmod-fedora-44.repo && \
-    sed -i '/^baseurl=/a releasever=44' /etc/yum.repos.d/_copr_mulderje-facetimehd-kmod.repo
+    https://copr.fedorainfracloud.org/coprs/mulderje/facetimehd-kmod/repo/fedora-44/mulderje-facetimehd-kmod-fedora-44.repo
 
 # 3. Install Budgie Desktop (Onyx) and Essential Tools
 # Includes WireGuard, Toolbox, and Silverblue-standard packages
-RUN dnf5 -y --refresh install \
-    gtklock polkit \
+RUN dnf5 -y group install "Budgie Desktop" && \
+    dnf5 -y --refresh install \
+    budgie-desktop-services gtklock polkit \
     flatpak distrobox \
     wireguard-tools systemd-resolved nm-connection-editor \
-    glibc-all-langpacks intel-media-driver mc btop libva-utils zram zip unzip usbutils lm_sensors powertop && \
+    glibc-all-langpacks intel-media-driver ffmpeg mc btop libva-utils zram zip unzip usbutils lm_sensors powertop && \
     dnf5 clean all
 
 # 4. MacBook Hardware: Drivers & Thermal Management
 # broadcom-wl for WiFi, facetimehd for camera, mbpfan for cooling
-RUN dnf5 -y --refresh --setopt=tsflags=noscripts install \
+RUN dnf5 -y --refresh install \
     broadcom-wl akmod-wl \
     akmod-facetimehd facetimehd-kmod-common \
     kernel-devel akmods wget git make gcc curl xz cpio \
     NetworkManager-wifi && \
     dnf5 clean all
 
-# 4.1. Build and Install Akmods
-RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \ 
-    mkdir -p /var/cache/akmods /var/tmp && \
-    chmod 777 /var/cache/akmods /var/tmp && \
-    akmods --rebuild --kernels "${KERNEL_VERSION}" --kmod facetimehd && \
-    akmods --rebuild --kernels "${KERNEL_VERSION}" --kmod wl && \
-    dnf5 install -y /var/cache/akmods/facetimehd/*.rpm /var/cache/akmods/wl/*.rpm && \
-    chmod 755 /var/tmp
+# 4.1. Build Akmods for the specific kernel in the image
+RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
+    echo "▸ Building modules for kernel: ${KERNEL_VERSION}" && \
+    akmods --force --kernels "${KERNEL_VERSION}" --kmod facetimehd && \
+    akmods --force --kernels "${KERNEL_VERSION}" --kmod wl
 
 # 5. Extract FaceTimeHD Firmware from Apple BootCamp Driver
 RUN git clone --depth 1 "https://github.com/patjak/facetimehd-firmware.git" /tmp/facetimehd-firmware && \
