@@ -3,6 +3,10 @@ FROM quay.io/fedora-ostree-desktops/budgie-atomic:44
 
 RUN set -euo pipefail
 
+# 1.1 Adding akmodsbuild to build akmod modules
+RUN groupadd -g 999 akmodsbuild && \
+    useradd -u 999 -g akmodsbuild -d /var/cache/akmods -s /sbin/nologin akm
+
 # 2. Setup Repositories
 RUN dnf5 -y --refresh install \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-44.noarch.rpm" \
