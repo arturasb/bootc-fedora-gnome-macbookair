@@ -1,5 +1,5 @@
 # 1. Base: Use official Fedora 44 bootc
-FROM quay.io/fedora/fedora-bootc:44
+FROM quay.io/fedora-ostree-desktops/budgie-atomic:44
 
 RUN set -euo pipefail
 
@@ -14,9 +14,8 @@ RUN dnf5 -y --refresh install \
 
 # 3. Install Budgie Desktop (Onyx) and Essential Tools
 # Includes WireGuard, Toolbox, and Silverblue-standard packages
-RUN dnf5 -y group install budgie-desktop-environment && \
-    dnf5 -y --refresh install \
-    budgie-control-center gnome-session-wayland-session budgie-desktop-services fedora-release-identity-budgie gtklock polkit \
+RUN dnf5 -y --refresh install \
+    gtklock polkit \
     flatpak distrobox \
     wireguard-tools systemd-resolved nm-connection-editor \
     glibc-all-langpacks intel-media-driver ffmpeg mc btop libva-utils zram zip unzip usbutils lm_sensors powertop && \
