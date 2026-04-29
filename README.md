@@ -1,6 +1,6 @@
-# bootc-fedora-gnome-macbookair
+# bootc-fedora-budgie-macbookair
 
-Immutable Fedora 43 image with Budgie Desktop, tailored for MacBook Air hardware. Manual builds via GitHub Actions.
+Immutable Fedora 44 image with Budgie Desktop, tailored for MacBook Air hardware. Manual builds via GitHub Actions.
 
 > **Tested on:** MacBook Air A1466 (Mid 2012 – 2017)
 
@@ -8,7 +8,7 @@ Immutable Fedora 43 image with Budgie Desktop, tailored for MacBook Air hardware
 
 | Component | Details |
 |-----------|---------|
-| **Base** | Fedora Linux 43 (`quay.io/fedora/fedora-bootc:43`) |
+| **Base** | Fedora Linux 44 (`quay.io/fedora/fedora-bootc:44`) |
 | **Desktop** | Budgie Desktop |
 | **WiFi** | Broadcom `akmod-wl` via RPMFusion Non-Free |
 | **Camera** | FaceTimeHD via [mulderje/facetimehd-kmod](https://copr.fedorainfracloud.org/coprs/mulderje/facetimehd-kmod/) COPR + [firmware](https://github.com/patjak/facetimehd-firmware) |
@@ -59,10 +59,10 @@ sudo reboot
 ### Build the container image
 
 ```bash
-git clone https://github.com/arturasb/bootc-fedora-gnome-macbookair.git
-cd bootc-fedora-gnome-macbookair
+git clone https://github.com/arturasb/bootc-fedora-budgie-macbookair.git
+cd bootc-fedora-budgie-macbookair
 mkdir -p output
-sudo podman build -t bootc-fedora-gnome-macbookair -f Containerfile
+sudo podman build -t bootc-fedora-budgie-macbookair -f Containerfile
 ```
 
 ### Create an installation ISO
@@ -78,7 +78,7 @@ sudo podman run \
     quay.io/centos-bootc/bootc-image-builder:latest \
     --type anaconda-iso \
     --rootfs btrfs \
-    localhost/bootc-fedora-gnome-macbookair
+    localhost/bootc-fedora-budgie-macbookair
 ```
 
 The resulting ISO will be at `output/bootiso/install.iso`.
@@ -93,7 +93,7 @@ bootc status
 sudo bootc rollback
 
 # Switch to this image (if already on bootc)
-sudo bootc switch ghcr.io/arturasb/bootc-fedora-gnome-macbookair:latest
+sudo bootc switch ghcr.io/arturasb/bootc-fedora-budgie-macbookair:latest
 ```
 
 ## Rebasing from Fedora Atomic (Silverblue/Kinoite)
@@ -108,7 +108,7 @@ systemctl reboot
 
 Then, execute the rebase command directly from the container registry:
 ```bash
-sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/arturasb/bootc-fedora-gnome-macbookair:latest
+sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/arturasb/bootc-fedora-budgie-macbookair:latest
 systemctl reboot
 ```
 
