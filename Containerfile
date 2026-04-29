@@ -35,15 +35,12 @@ RUN dnf5 -y --refresh --setopt=tsflags=noscripts install \
     dnf5 clean all
 
 # 4.1. Build and Install Akmods
-RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
+RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \ 
     mkdir -p /var/cache/akmods /var/tmp && \
     chmod 777 /var/cache/akmods /var/tmp && \
-    # 1. Build the RPMs as the akmodsbuild user (--rebuild generates the RPM without installing)
-    su -s /bin/bash akmodsbuild -c "akmods --rebuild --kernels ${KERNEL_VERSION} --kmod facetimehd" && \
-    su -s /bin/bash akmodsbuild -c "akmods --rebuild --kernels ${KERNEL_VERSION} --kmod wl" && \
-    # 2. Install the newly created RPMs as root
-    dnf install -y /var/cache/akmods/facetimehd/*.rpm /var/cache/akmods/wl/*.rpm && \
-    # 3. Cleanup
+    akmods --rebuild --kernels "${KERNEL_VERSION}" --kmod facetimehd && \
+    akmods --rebuild --kernels "${KERNEL_VERSION}" --kmod wl && \
+    dnf5 install -y /var/cache/akmods/facetimehd/*.rpm /var/cache/akmods/wl/*.rpm && \
     chmod 755 /var/tmp
 
 # 5. Extract FaceTimeHD Firmware from Apple BootCamp Driver
