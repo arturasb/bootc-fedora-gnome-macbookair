@@ -4,7 +4,7 @@ FROM quay.io/fedora/fedora-bootc:44
 RUN set -euo pipefail
 
 # 2. Setup Repositories
-RUN dnf5 -y install \
+RUN dnf5 -y --refresh install \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-44.noarch.rpm" \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm" && \
     # Direct download of COPR repo file to avoid dnf5 plugin issues
@@ -14,7 +14,7 @@ RUN dnf5 -y install \
 # 3. Install Budgie Desktop (Onyx) and Essential Tools
 # Includes WireGuard, Toolbox, and Silverblue-standard packages
 RUN dnf5 -y group install budgie-desktop-environment && \
-    dnf5 -y install \
+    dnf5 -y --refresh install \
     network-manager-applet \
     lightdm slick-greeter \
     flatpak distrobox \
@@ -25,7 +25,7 @@ RUN dnf5 -y group install budgie-desktop-environment && \
 
 # 4. MacBook Hardware: Drivers & Thermal Management
 # broadcom-wl for WiFi, facetimehd for camera, mbpfan for cooling
-RUN dnf5 -y install \
+RUN dnf5 -y --refresh install \
     broadcom-wl akmod-wl \
     akmod-facetimehd facetimehd-kmod-common \
     dkms kernel-devel akmods wget git make gcc curl xz cpio \
@@ -93,7 +93,7 @@ RUN echo "▸ Creating required directories" && \
 
 # 6.3. Installing kernel-modules-extra for broader hardware support
 RUN echo "▸ Installing kernel-modules-extra for broader hardware support" && \
-    dnf5 -y install kernel-modules-extra --refresh
+    dnf5 -y  --refresh install kernel-modules-extra --refresh
 
 # 7. Regenerate Initramfs (CRITICAL)
 # This packs your new MacBook drivers into the boot image
