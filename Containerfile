@@ -15,7 +15,7 @@ RUN dnf5 -y --refresh install \
 # Includes WireGuard, Toolbox, and Silverblue-standard packages
 RUN dnf5 -y group install budgie-desktop-environment && \
     dnf5 -y --refresh install \
-    budgie-desktop-services gtklock polkit \
+    budgie-desktop-services fedora-release-identity-budgie gtklock polkit \
     flatpak distrobox \
     wireguard-tools systemd-resolved nm-connection-editor \
     glibc-all-langpacks intel-media-driver ffmpeg mc btop libva-utils zram zip unzip usbutils lm_sensors powertop && \
