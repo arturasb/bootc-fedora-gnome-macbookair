@@ -5,7 +5,8 @@ RUN set -euo pipefail
 
 # 1.1 Adding akmodsbuild to build akmod modules
 RUN groupadd akmodsbuild && \
-    useradd -g akmodsbuild -d /var/cache/akmods -s /sbin/nologin akmodsbuild
+    useradd -g akmodsbuild -d /var/cache/akmods -s /sbin/nologin akmodsbuild && \
+    chown -R akmodsbuild:akmodsbuild /var/cache/akmods /usr/src/akmods
 
 # 2. Setup Repositories
 RUN dnf5 -y --refresh install \
@@ -37,8 +38,8 @@ RUN dnf5 -y --refresh install \
 # 4.1. Build Akmods for the specific kernel in the image
 RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
     echo "▸ Building modules for kernel: ${KERNEL_VERSION}" && \
-    akmods --force --kernels "${KERNEL_VERSION}" --kmod facetimehd && \
-    akmods --force --kernels "${KERNEL_VERSION}" --kmod wl
+    sudo -u akmodsbuild akmods --force --kernels "${KERNEL_VERSION}" --kmod facetimehd && \
+    sudo -u akmodsbuild akmods --force --kernels "${KERNEL_VERSION}" --kmod wl
 
 # 5. Extract FaceTimeHD Firmware from Apple BootCamp Driver
 RUN git clone --depth 1 "https://github.com/patjak/facetimehd-firmware.git" /tmp/facetimehd-firmware && \
