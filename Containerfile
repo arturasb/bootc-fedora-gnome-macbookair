@@ -17,7 +17,7 @@ RUN dnf5 -y group install budgie-desktop-environment && \
     dnf5 -y --refresh install \
     flatpak distrobox \
     wireguard-tools systemd-resolved nm-connection-editor \
-    glibc-all-langpacks intel-media-driver ffmpeg mc btop libva-utils zram zip unzip usbutils lm_sensors && \
+    glibc-all-langpacks intel-media-driver ffmpeg mc btop libva-utils zram zip unzip usbutils lm_sensors powertop && \
     dnf5 clean all
 
 # 4. MacBook Hardware: Drivers & Thermal Management
