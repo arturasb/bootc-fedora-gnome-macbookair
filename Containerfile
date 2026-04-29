@@ -18,7 +18,7 @@ RUN dnf5 -y --setopt=install_weak_deps=True group install budgie-desktop && \
     gtklock polkit \
     flatpak distrobox \
     wireguard-tools systemd-resolved nm-connection-editor \
-    glibc-all-langpacks intel-media-driver ffmpeg mc btop libva-utils zram zip unzip usbutils lm_sensors powertop && \
+    glibc-all-langpacks intel-media-driver mc btop libva-utils zram zip unzip usbutils lm_sensors powertop && \
     dnf5 clean all
 
 # 4. MacBook Hardware: Drivers & Thermal Management
