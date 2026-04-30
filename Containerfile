@@ -87,6 +87,10 @@ RUN plymouth-set-default-theme -R spinner
 # 5.8. MacBook keyboard: fn key behavior
 COPY hid-apple.conf /usr/lib/modprobe.d/hid-apple.conf
 
+# 5.9. Make logind to ignore power button activation resulting to immediate poweroff
+COPY mkdir /etc/systemd/logind.conf.d/ && \
+    10-powerkey.conf /etc/systemd/logind.conf.d/10-powerkey.conf
+
 # 6. System Configuration & Services
 # Load facetimehd module and enable critical hardware/GUI services
 RUN echo "facetimehd" > /etc/modules-load.d/facetimehd.conf && \
