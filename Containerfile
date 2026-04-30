@@ -88,12 +88,12 @@ RUN plymouth-set-default-theme -R spinner
 COPY hid-apple.conf /usr/lib/modprobe.d/hid-apple.conf
 
 # 5.9. Make logind to ignore power button activation resulting to immediate poweroff
-COPY mkdir /etc/systemd/logind.conf.d/ && \
-    10-powerkey.conf /etc/systemd/logind.conf.d/10-powerkey.conf
+RUN mkdir /etc/systemd/logind.conf.d/
+COPY 10-powerkey.conf /etc/systemd/logind.conf.d/10-powerkey.conf
 
 # 5.10. 
-COPY mkdir /etc/polkit-1/rules.d/ && \
-    50-shutdown.rules /etc/polkit-1/rules.d/50-shutdown.rules
+RUN mkdir /etc/polkit-1/rules.d/
+COPY 50-shutdown.rules /etc/polkit-1/rules.d/50-shutdown.rules
 
 
 # 6. System Configuration & Services
