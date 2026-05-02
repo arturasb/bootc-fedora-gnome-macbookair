@@ -24,8 +24,11 @@ RUN dnf5 -y --refresh install \
 # 4.1. Build Akmods for the specific kernel in the image
 RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
     echo "▸ Building modules for kernel: ${KERNEL_VERSION}" && \
-    akmods --force --kernels "${KERNEL_VERSION}" --kmod facetimehd && \
-    akmods --force --kernels "${KERNEL_VERSION}" --kmod wl
+    # Ensure akmodsbuild user has access to the build tree
+    chown -R akmodsbuild:akmodsbuild /var/cache/akmods && \
+    runuser -u akmodsbuild -- akmods --force --kernels "${KERNEL_VERSION}" --kmod facetimehd && \
+    runuser -u akmodsbuild -- akmods --force --kernels "${KERNEL_VERSION}" --kmod wl && \
+    dnf5 install -y /var/cache/akmods/wl/*.rpm /var/cache/akmods/facetimehd/*.rpm
 
 # 5. Extract FaceTimeHD Firmware from Apple BootCamp Driver
 RUN git clone --depth 1 "https://github.com/patjak/facetimehd-firmware.git" /tmp/facetimehd-firmware && \
@@ -53,7 +56,7 @@ RUN dnf5 install -y --allowerasing \
     gstreamer1-plugins-bad-freeworld \
     gstreamer1-plugins-ugly \
     gstreamer1-vaapi \
-    ffmpeg \
+    ffmpeg
     
 RUN dnf5 install -y intel-media-driver
 
@@ -124,7 +127,7 @@ rm -rfv /var/cache/* \
 RUN flatpak remote-delete --system fedora || true && \
   flatpak remote-delete --system fedora-testing || true
 # 8.2. Add Flathub flatpak repo to --user
-RUN flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+RUN flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 
 CLEANUP
