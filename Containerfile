@@ -15,8 +15,6 @@ RUN dnf5 -y --refresh install \
 # 2.1 MacBook Hardware: Drivers & Thermal Management
 # broadcom-wl for WiFi, facetimehd for camera, mbpfan for cooling
 RUN dnf5 -y install \
-    broadcom-wl akmod-wl \
-    akmod-facetimehd facetimehd-kmod-common \
     kernel-devel akmods wget git make gcc curl xz cpio \
     NetworkManager-wifi
 
@@ -26,7 +24,7 @@ RUN useradd -m -s /bin/bash akmodsbuild && \
     chown -R akmodsbuild:akmodsbuild /var/lib/akmods /var/cache/akmods /home/akmodsbuild
 
 # 2.3. MacBook Hardware: only download drivers for later build
-RUN dnf5 -y install --downloadonly \
+RUN dnf5 -y install --setopt=tsflags=noscripts \
     broadcom-wl akmod-wl \
     akmod-facetimehd facetimehd-kmod-common
 
