@@ -16,7 +16,7 @@ RUN dnf5 -y --refresh install \
 
 # 4. MacBook Hardware: Drivers & Thermal Management
 # broadcom-wl for WiFi, facetimehd for camera, mbpfan for cooling
-RUN dnf5 -y --refresh install \
+RUN dnf5 -y --setopt=tsflags=noscripts install \
     broadcom-wl akmod-wl \
     akmod-facetimehd facetimehd-kmod-common \
     kernel-devel akmods wget git make gcc curl xz cpio
@@ -24,8 +24,10 @@ RUN dnf5 -y --refresh install \
 # 4.1. Build Akmods for the specific kernel in the image
 RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
     echo "▸ Building modules for kernel: ${KERNEL_VERSION}" && \
-    # Ensure akmodsbuild user has access to the build tree
-    chown -R akmodsbuild:akmodsbuild /var/cache/akmods && \
+    # Create home for the build user and fix permissions
+    mkdir -p /var/cache/akmods && \
+    chown -R akmodsbuild:akmodsbuild /var/cache/akmods /home/akmodsbuild && \
+    # Run the builds
     runuser -u akmodsbuild -- akmods --force --kernels "${KERNEL_VERSION}" --kmod facetimehd && \
     runuser -u akmodsbuild -- akmods --force --kernels "${KERNEL_VERSION}" --kmod wl && \
     dnf5 install -y /var/cache/akmods/wl/*.rpm /var/cache/akmods/facetimehd/*.rpm
@@ -111,12 +113,10 @@ RUN kver="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" &
     dracut -vf "/usr/lib/modules/${kver}/initramfs.img" "${kver}"
 
 
-RUN << CLEANUP
-
 # 8. Final cleanup
-echo "▸ Final cleanup for bootc compliance"
-dnf5 clean all
-rm -rfv /var/cache/* \
+RUN echo "▸ Final cleanup for bootc compliance" && \
+    dnf5 clean all && \
+    rm -rfv /var/cache/* \
         /var/log/* \
         /var/tmp/* \
         /var/cache/libdnf5/* \
@@ -126,11 +126,8 @@ rm -rfv /var/cache/* \
 # 8.1. Remove Fedora flatpak repo
 RUN flatpak remote-delete --system fedora || true && \
   flatpak remote-delete --system fedora-testing || true
-# 8.2. Add Flathub flatpak repo to --user
+# 8.2. Add Flathub flatpak repo
 RUN flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-
-
-CLEANUP
 
 # 9. Lint the final image
 RUN bootc container lint
