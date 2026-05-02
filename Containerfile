@@ -33,8 +33,8 @@ RUN printf 'AKMODS_BUILD_DIR=/var/lib/akmods/build\nAKMODS_OUTPUT_DIR=/var/cache
 
 # 2.5. Build facetimehd + wl as non-root (produces rpms under /var/cache/akmods/<kmod>/)
 RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
-    runuser -u akmodsbuild -- akmods --force --kernels "${KERNEL_VERSION}" --kmod facetimehd && \
-    runuser -u akmodsbuild -- akmods --force --kernels "${KERNEL_VERSION}" --kmod wl
+    runuser -u akmodsbuild -- akmods --force --rebuild --kernels "${KERNEL_VERSION}" --kmod facetimehd && \
+    runuser -u akmodsbuild -- akmods --force --rebuild --kernels "${KERNEL_VERSION}" --kmod wl
 
 # 2.6. Install the generated rpms but skip their %post scriptlets (they would try to run akmods)
 RUN rpm -Uvh --noscripts /var/cache/akmods/wl/*.rpm /var/cache/akmods/facetimehd/*.rpm || \
