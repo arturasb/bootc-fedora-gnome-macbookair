@@ -29,15 +29,30 @@ RUN useradd -m -s /bin/bash akmodsbuild && \
 RUN printf 'AKMODS_BUILD_DIR=/var/lib/akmods/build\nAKMODS_OUTPUT_DIR=/var/cache/akmods/output\nAKMODS_INSTALL=no\n' > /etc/akmods.conf
 
 # 2.4. MacBook Hardware: only download drivers for later build
-RUN dnf5 -y download --srpm --destdir /usr/src/akmods/\
-    akmod-wl \
-    akmod-facetimehd && \
+#RUN dnf5 -y download --srpm --destdir /usr/src/akmods/\
+#    akmod-wl \
+#    akmod-facetimehd && \
+#    chown -R akmodsbuild:akmodsbuild /usr/src/akmods/
+
+RUN dnf5 -y download --srpm --destdir /usr/src/akmods akmod-wl akmod-facetimehd && \
+    ls -l /usr/src/akmods && \
     chown -R akmodsbuild:akmodsbuild /usr/src/akmods/
 
+# TMP DEBUG
+RUN ls -la /usr/src/akmods || true
+
 # 2.5. Build facetimehd + wl as non-root (produces rpms under /var/cache/akmods/<kmod>/)
-RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
-    runuser -u akmodsbuild -- akmodsbuild --kernels "${KERNEL_VERSION}" /usr/src/akmods/akmod-wl-*.src.rpm && \
-    runuser -u akmodsbuild -- akmodsbuild --kernels "${KERNEL_VERSION}" /usr/src/akmods/facetimehd-*.src.rpm
+#RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
+#    runuser -u akmodsbuild -- akmodsbuild --kernels "${KERNEL_VERSION}" /usr/src/akmods/akmod-wl-*.src.rpm && \
+#    runuser -u akmodsbuild -- akmodsbuild --kernels "${KERNEL_VERSION}" /usr/src/akmods/facetimehd-*.src.rpm
+
+RUN mkdir -p /usr/src/akmods && \
+    KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
+        for srpm in /usr/src/akmods/akmod-wl.src.rpm /usr/src/akmods/facetimehd.src.rpm; do \
+            if [ -e "$srpm" ]; then \ runuser -u akmodsbuild -- akmodsbuild --kernels "$KERNEL_VERSION" "$srpm"; \
+            else \ echo "skipping missing $srpm"; \
+            fi; \
+        done
 
 # 2.6. Install the generated rpms but skip their %post scriptlets (they would try to run akmods)
 RUN rpm -Uvh --noscripts /var/cache/akmods/output/wl/*.rpm /var/cache/akmods/output/facetimehd/*.rpm || \
