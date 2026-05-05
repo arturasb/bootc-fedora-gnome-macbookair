@@ -33,18 +33,12 @@ RUN dnf5 -y download --srpm --destdir /usr/src/akmods akmod-wl akmod-facetimehd 
     ls -l /usr/src/akmods && \
     chown -R akmodsbuild:akmodsbuild /usr/src/akmods/
 
-# TMP DEBUG
-RUN ls -la /usr/src/akmods || true
-
 # 2.5. Build facetimehd + wl as non-root (produces rpms under /var/cache/akmods/<kmod>/)
 RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
     for srpm in /usr/src/akmods/*.src.rpm; do \
         printf 'Building %s for kernel %s\n' "$srpm" "$KERNEL_VERSION"; \
         runuser -u akmodsbuild -- akmodsbuild --kernels "$KERNEL_VERSION" --outputdir /var/cache/akmods/output "$srpm" || exit 1; \
     done
-
-# TMP DEBUG
-RUN ls -la /var/cache/akmods/output || true
 
 # 2.6. Install the generated rpms
 RUN dnf5 install -y /var/cache/akmods/output/*.rpm
@@ -69,14 +63,7 @@ RUN echo "▸ Installing mbpfan v2.4.0 from source" && \
     rm -rf /tmp/mbpfan
 
 # 5.2 Installing codecs and media drivers
-RUN dnf5 install -y --allowerasing \
-    gstreamer1-plugin-libav \
-    gstreamer1-plugins-bad-free-extras \
-    gstreamer1-plugins-bad-freeworld \
-    gstreamer1-plugins-ugly \
-    gstreamer1-vaapi \
-    ffmpeg
-    
+RUN dnf5 swap ffmpeg-free ffmpeg --allowerasing
 RUN dnf5 install -y intel-media-driver
 
 # 5.3. Now disable RPM Fusion repos
