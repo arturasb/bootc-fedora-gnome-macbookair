@@ -4,6 +4,8 @@ FROM quay.io/fedora-ostree-desktops/budgie-atomic:44
 # 1.1. Making /opt immutable
 RUN rm /opt && mkdir /opt
 
+RUN dnf5 clean all
+
 # 2. Setup Repositories
 RUN dnf5 -y --refresh install \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-44.noarch.rpm" \
@@ -21,7 +23,7 @@ RUN dnf5 -y install \
 # 2.2. Create unprivileged build user and akmods dirs before any akmods runs
 RUN useradd -m -s /bin/bash akmodsbuild && \
     mkdir -p /var/lib/akmods/build /var/cache/akmods/output && \
-    chown -R akmodsbuild:akmodsbuild /var/lib/akmods /var/cache/akmods /home/akmodsbuild
+    chown -R akmodsbuild:akmodsbuild /var/lib/akmods /var/cache/akmods /home/akmodsbuild /usr/src/akmods/
 
 # 2.3. Make akmods build-only (prevent it from trying to install modules)
 RUN printf 'AKMODS_BUILD_DIR=/var/lib/akmods/build\nAKMODS_OUTPUT_DIR=/var/cache/akmods/output\nAKMODS_INSTALL=no\n' > /etc/akmods.conf
