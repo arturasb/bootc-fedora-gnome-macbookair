@@ -108,7 +108,7 @@ RUN echo "facetimehd" > /etc/modules-load.d/facetimehd.conf && \
     systemctl enable mbpfan.service suspend-fix.service powertop.service zram-swap.service
 
 # 6.1. systemd-remount-fs: bootc manages root mount options via initrd, not fstab
-RUN systemctl mask systemd-remount-fs.service
+# RUN systemctl mask systemd-remount-fs.service
 
 # 7. Regenerate Initramfs (CRITICAL)
 # This packs your new MacBook drivers into the boot image
