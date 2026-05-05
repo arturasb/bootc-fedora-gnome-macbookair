@@ -46,13 +46,11 @@ RUN ls -la /usr/src/akmods || true
 #    runuser -u akmodsbuild -- akmodsbuild --kernels "${KERNEL_VERSION}" /usr/src/akmods/akmod-wl-*.src.rpm && \
 #    runuser -u akmodsbuild -- akmodsbuild --kernels "${KERNEL_VERSION}" /usr/src/akmods/facetimehd-*.src.rpm
 
-RUN mkdir -p /usr/src/akmods && \
-    KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
-        for srpm in /usr/src/akmods/akmod-wl.src.rpm /usr/src/akmods/facetimehd.src.rpm; do \
-            if [ -e "$srpm" ]; then \ runuser -u akmodsbuild -- akmodsbuild --kernels "$KERNEL_VERSION" "$srpm"; \
-            else \ echo "skipping missing $srpm"; \
-            fi; \
-        done
+RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
+    for srpm in /usr/src/akmods/*.src.rpm; do \
+        echo "Building $srpm for kernel $KERNEL_VERSION..."; \
+        runuser -u akmodsbuild -- akmodsbuild --kernels "$KERNEL_VERSION" "$srpm"; \
+    done
 
 # 2.6. Install the generated rpms but skip their %post scriptlets (they would try to run akmods)
 RUN rpm -Uvh --noscripts /var/cache/akmods/output/wl/*.rpm /var/cache/akmods/output/facetimehd/*.rpm || \
