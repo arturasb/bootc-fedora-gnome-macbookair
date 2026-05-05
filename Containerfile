@@ -30,8 +30,8 @@ RUN printf 'AKMODS_BUILD_DIR=/var/lib/akmods/build\nAKMODS_OUTPUT_DIR=/var/cache
 
 # 2.4. MacBook Hardware: only download drivers for later build
 RUN dnf5 -y download --srpm --destdir /usr/src/akmods/\
-    broadcom-wl akmod-wl \
-    akmod-facetimehd facetimehd-kmod-common && \
+    akmod-wl \
+    akmod-facetimehd && \
     chown -R akmodsbuild:akmodsbuild /usr/src/akmods/
 
 # 2.5. Build facetimehd + wl as non-root (produces rpms under /var/cache/akmods/<kmod>/)
