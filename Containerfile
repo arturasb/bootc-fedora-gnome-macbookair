@@ -27,7 +27,7 @@ RUN useradd -m -s /bin/bash akmodsbuild && \
 RUN printf 'AKMODS_BUILD_DIR=/var/lib/akmods/build\nAKMODS_OUTPUT_DIR=/var/cache/akmods/output\nAKMODS_INSTALL=no\n' > /etc/akmods.conf
 
 # 2.4. MacBook Hardware: only download drivers for later build
-RUN dnf5 -y install --setopt=tsflags=noscripts \
+RUN dnf5 -y download \
     broadcom-wl akmod-wl \
     akmod-facetimehd facetimehd-kmod-common
 
