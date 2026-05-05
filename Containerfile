@@ -122,6 +122,9 @@ RUN echo "▸ Final cleanup for bootc compliance" && \
     rm -rfv /var/cache/* \
         /var/log/* \
         /var/tmp/* \
+        /run/akmods/* \
+        /run/dnf/* \
+        /var/home/akmodsbuild/* \
         /var/cache/libdnf5/* \
         /var/lib/dnf \
         /var/usrlocal/share/applications/mimeinfo.cache 
