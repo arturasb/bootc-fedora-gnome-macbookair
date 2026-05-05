@@ -62,8 +62,7 @@ RUN echo "▸ Installing mbpfan v2.4.0 from source" && \
     cd /  && \
     rm -rf /tmp/mbpfan
 
-# 5.2 Installing codecs and media drivers
-RUN dnf5 swap ffmpeg-free ffmpeg --allowerasing
+# 5.2 Installing media drivers
 RUN dnf5 install -y intel-media-driver
 
 # 5.3. Now disable RPM Fusion repos
