@@ -23,7 +23,7 @@ RUN dnf5 -y install \
 # 2.2. Create unprivileged build user and akmods dirs before any akmods runs
 RUN useradd -m -s /bin/bash akmodsbuild && \
     mkdir -p /var/lib/akmods/build /var/cache/akmods/output && \
-    chown -R akmodsbuild:akmodsbuild /var/lib/akmods /var/cache/akmods /home/akmodsbuild /usr/src/akmods/
+    chown -R akmodsbuild:akmodsbuild /var/lib/akmods /var/cache/akmods /home/akmodsbuild
 
 # 2.3. Make akmods build-only (prevent it from trying to install modules)
 RUN printf 'AKMODS_BUILD_DIR=/var/lib/akmods/build\nAKMODS_OUTPUT_DIR=/var/cache/akmods/output\nAKMODS_INSTALL=no\n' > /etc/akmods.conf
@@ -31,16 +31,17 @@ RUN printf 'AKMODS_BUILD_DIR=/var/lib/akmods/build\nAKMODS_OUTPUT_DIR=/var/cache
 # 2.4. MacBook Hardware: only download drivers for later build
 RUN dnf5 -y download --srpm --destdir /usr/src/akmods/\
     broadcom-wl akmod-wl \
-    akmod-facetimehd facetimehd-kmod-common
+    akmod-facetimehd facetimehd-kmod-common && \
+    chown -R akmodsbuild:akmodsbuild /usr/src/akmods/
 
 # 2.5. Build facetimehd + wl as non-root (produces rpms under /var/cache/akmods/<kmod>/)
 RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
-    runuser -u akmodsbuild -- akmods --force --rebuild --kernels "${KERNEL_VERSION}" --kmod facetimehd && \
-    runuser -u akmodsbuild -- akmods --force --rebuild --kernels "${KERNEL_VERSION}" --kmod wl
+    runuser -u akmodsbuild -- akmods --force --rebuild --kernels "${KERNEL_VERSION}" && \
+    runuser -u akmodsbuild -- akmods --force --rebuild --kernels "${KERNEL_VERSION}"
 
 # 2.6. Install the generated rpms but skip their %post scriptlets (they would try to run akmods)
-RUN rpm -Uvh --noscripts /var/cache/akmods/wl/*.rpm /var/cache/akmods/facetimehd/*.rpm || \
-    dnf5 -y localinstall /var/cache/akmods/wl/*.rpm /var/cache/akmods/facetimehd/*.rpm || true
+RUN rpm -Uvh --noscripts /var/cache/akmods/output/wl/*.rpm /var/cache/akmods/output/facetimehd/*.rpm || \
+    dnf5 -y localinstall /var/cache/akmods/output/wl/*.rpm /var/cache/akmods/output/facetimehd/*.rpm || true
 
 # 5. Extract FaceTimeHD Firmware from Apple BootCamp Driver
 RUN git clone --depth 1 "https://github.com/patjak/facetimehd-firmware.git" /tmp/facetimehd-firmware && \
