@@ -48,12 +48,8 @@ RUN ls -la /usr/src/akmods || true
 
 RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
     for srpm in /usr/src/akmods/*.src.rpm; do \
-        echo "Building $srpm for kernel $KERNEL_VERSION..."; \
-        runuser -u akmodsbuild -- akmodsbuild \
-            --kernels "$KERNEL_VERSION" \
-            --builddir /var/lib/akmods/build \
-            --outputdir /var/cache/akmods/output \
-            "$srpm"; \
+        printf 'Building %s for kernel %s\n' "$srpm" "$KERNEL_VERSION"; \
+        runuser -u akmodsbuild -- akmodsbuild --kernels "$KERNEL_VERSION" --outputdir /var/cache/akmods/output "$srpm" || exit 1; \
     done
 
 # 2.6. Install the generated rpms but skip their %post scriptlets (they would try to run akmods)
