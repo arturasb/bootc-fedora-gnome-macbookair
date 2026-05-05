@@ -5,16 +5,16 @@ FROM quay.io/fedora-ostree-desktops/budgie-atomic:44
 RUN rm /opt && mkdir /opt
 
 # 2. Setup Repositories
-RUN autodnf -y --refresh install \
+RUN dnf5 -y --refresh install \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-44.noarch.rpm" \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-44.noarch.rpm" && \
-    # Direct download of COPR repo file to avoid autodnf plugin issues
+    # Direct download of COPR repo file to avoid dnf5 plugin issues
     curl -L -o /etc/yum.repos.d/_copr_mulderje-facetimehd-kmod.repo \
     https://copr.fedorainfracloud.org/coprs/mulderje/facetimehd-kmod/repo/fedora-44/mulderje-facetimehd-kmod-fedora-44.repo
 
 # 2.1 MacBook Hardware: Drivers & Thermal Management
 # broadcom-wl for WiFi, facetimehd for camera, mbpfan for cooling
-RUN autodnf -y install \
+RUN dnf5 -y install \
     kernel-devel akmods wget git make gcc curl xz cpio \
     NetworkManager-wifi
 
@@ -27,7 +27,7 @@ RUN useradd -m -s /bin/bash akmodsbuild && \
 RUN printf 'AKMODS_BUILD_DIR=/var/lib/akmods/build\nAKMODS_OUTPUT_DIR=/var/cache/akmods/output\nAKMODS_INSTALL=no\n' > /etc/akmods.conf
 
 # 2.4. MacBook Hardware: only download drivers for later build
-RUN autodnf -y install --setopt=tsflags=noscripts \
+RUN dnf5 -y install --setopt=tsflags=noscripts \
     broadcom-wl akmod-wl \
     akmod-facetimehd facetimehd-kmod-common
 
@@ -38,7 +38,7 @@ RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{A
 
 # 2.6. Install the generated rpms but skip their %post scriptlets (they would try to run akmods)
 RUN rpm -Uvh --noscripts /var/cache/akmods/wl/*.rpm /var/cache/akmods/facetimehd/*.rpm || \
-    autodnf -y localinstall /var/cache/akmods/wl/*.rpm /var/cache/akmods/facetimehd/*.rpm || true
+    dnf5 -y localinstall /var/cache/akmods/wl/*.rpm /var/cache/akmods/facetimehd/*.rpm || true
 
 # 5. Extract FaceTimeHD Firmware from Apple BootCamp Driver
 RUN git clone --depth 1 "https://github.com/patjak/facetimehd-firmware.git" /tmp/facetimehd-firmware && \
@@ -60,7 +60,7 @@ RUN echo "▸ Installing mbpfan v2.4.0 from source" && \
     rm -rf /tmp/mbpfan
 
 # 5.2 Installing codecs and media drivers
-RUN autodnf install -y --allowerasing \
+RUN dnf5 install -y --allowerasing \
     gstreamer1-plugin-libav \
     gstreamer1-plugins-bad-free-extras \
     gstreamer1-plugins-bad-freeworld \
@@ -68,13 +68,13 @@ RUN autodnf install -y --allowerasing \
     gstreamer1-vaapi \
     ffmpeg
     
-RUN autodnf install -y intel-media-driver
+RUN dnf5 install -y intel-media-driver
 
 # 5.3. Now disable RPM Fusion repos
-RUN autodnf config-manager setopt 'rpmfusion-*.enabled=0'
+RUN dnf5 config-manager setopt 'rpmfusion-*.enabled=0'
 
 # 5.4. Installing packages
-RUN autodnf install -y \
+RUN dnf5 install -y \
     mc \
     btop \
     libva-utils \
@@ -123,11 +123,11 @@ RUN kver="$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}')" &
 
 # 8. Final cleanup
 RUN echo "▸ Final cleanup for bootc compliance" && \
-    autodnf clean all && \
+    dnf5 clean all && \
     rm -rfv /var/cache/* \
         /var/log/* \
         /var/tmp/* \
-        /var/cache/libautodnf/* \
+        /var/cache/libdnf5/* \
         /var/lib/dnf \
         /var/usrlocal/share/applications/mimeinfo.cache 
 
