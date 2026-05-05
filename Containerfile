@@ -44,11 +44,11 @@ RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{A
     done
 
 # TMP DEBUG
-RUN ls -la /usr/src/akmods/output || true
+RUN ls -la /var/cache/akmods/output || true
 
 
 # 2.6. Install the generated rpms but skip their %post scriptlets (they would try to run akmods)
-RUN rpm -Uvh /var/cache/akmods/output/*.rpm
+RUN rpm -ivh /var/cache/akmods/output/*.rpm
 
 # 5. Extract FaceTimeHD Firmware from Apple BootCamp Driver
 RUN git clone --depth 1 "https://github.com/patjak/facetimehd-firmware.git" /tmp/facetimehd-firmware && \
