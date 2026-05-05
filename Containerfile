@@ -36,8 +36,8 @@ RUN dnf5 -y download --srpm --destdir /usr/src/akmods/\
 
 # 2.5. Build facetimehd + wl as non-root (produces rpms under /var/cache/akmods/<kmod>/)
 RUN KERNEL_VERSION=$(rpm -q kernel-core --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
-    runuser -u akmodsbuild -- akmods --force --rebuild --kernels "${KERNEL_VERSION}" && \
-    runuser -u akmodsbuild -- akmods --force --rebuild --kernels "${KERNEL_VERSION}"
+    runuser -u akmodsbuild -- akmods --buildonly --force --rebuild --kernels "${KERNEL_VERSION}" && \
+    runuser -u akmodsbuild -- akmods --buildonly --force --rebuild --kernels "${KERNEL_VERSION}"
 
 # 2.6. Install the generated rpms but skip their %post scriptlets (they would try to run akmods)
 RUN rpm -Uvh --noscripts /var/cache/akmods/output/wl/*.rpm /var/cache/akmods/output/facetimehd/*.rpm || \
